@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM OOH · Panel</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg:         #0d0f14;
+    --surface:    #161922;
+    --surface2:   #1e2230;
+    --border:     #2a2f3d;
+    --accent:     #e8c547;
+    --accent2:    #4a9eff;
+    --accent3:    #ff6b6b;
+    --accent4:    #6bcb77;
+    --text:       #e8eaf0;
+    --muted:      #6b7280;
+    --radius:     8px;
+    --mono:       'DM Mono', monospace;
+    --sans:       'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ─────────────────────────── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+  .header-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+    letter-spacing: .5px;
+  }
+  .header-spacer { flex: 1; }
+
+  /* ── TABS ────────────────────────────── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 12px 20px 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .tab {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .5px;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+  }
+  .tab:hover  { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── CONTENT ─────────────────────────── */
+  .view { display: none; padding: 20px; }
+  .view.active { display: block; }
+
+  /* ── FILTERS BAR ─────────────────────── */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+    align-items: flex-end;
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-label { font-size: 10px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: .8px; }
+
+  select, input[type="text"], input[type="date"], textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 7px 10px;
+    font-family: var(--sans);
+    font-size: 12px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+
+  /* ── BUTTONS ─────────────────────────── */
+  .btn {
+    padding: 7px 16px;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: .3px;
+  }
+  .btn-primary { background: var(--accent); color: #0d0f14; }
+  .btn-primary:hover { background: #f0d060; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--text); }
+  .btn-sm { padding: 4px 10px; font-size: 11px; }
+  .btn-danger { background: #3d1a1a; color: var(--accent3); border: 1px solid #5a2020; }
+  .btn-success { background: #1a3d1a; color: var(--accent4); border: 1px solid #205a20; }
+
+  /* ── TABLE ───────────────────────────── */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  thead th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    padding: 10px 12px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+    cursor: pointer;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  td {
+    padding: 9px 12px;
+    vertical-align: middle;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── BADGES ──────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: var(--mono);
+    white-space: nowrap;
+  }
+  .badge-prospecto  { background: #1e2d3d; color: var(--accent2); }
+  .badge-contactado { background: #2d2a14; color: var(--accent); }
+  .badge-propuesta  { background: #1a2d1a; color: var(--accent4); }
+  .badge-negociacion { background: #2d1a2d; color: #c084fc; }
+  .badge-cerrado    { background: #1a3d1a; color: var(--accent4); }
+  .badge-descartado { background: #3d1a1a; color: var(--accent3); }
+
+  /* ── STAT CARDS ──────────────────────── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    font-family: var(--mono);
+  }
+  .stat-label { font-size: 10px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .6px; }
+
+  /* ── MODAL ───────────────────────────── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 560px;
+    max-width: 95vw;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 24px;
+  }
+  .modal-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 18px;
+    color: var(--accent);
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1/-1; }
+  .form-label { font-size: 10px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: .7px; }
+  textarea { resize: vertical; min-height: 64px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+  /* ── PANEL DETALLE ───────────────────── */
+  .detail-panel {
+    display: none;
+    position: fixed;
+    right: 0; top: 0; bottom: 0;
+    width: 380px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 150;
+    overflow-y: auto;
+    padding: 20px;
+    box-shadow: -8px 0 32px rgba(0,0,0,.4);
+  }
+  .detail-panel.open { display: block; }
+  .detail-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .detail-id { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .detail-empresa { font-size: 17px; font-weight: 800; }
+  .detail-close { margin-left: auto; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; }
+  .detail-row { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; }
+  .detail-key { font-size: 10px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: .7px; }
+  .detail-val { font-size: 13px; color: var(--text); }
+  .detail-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .detail-activities-title { font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .8px; }
+  .act-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px;
+    margin-bottom: 8px;
+    font-size: 11px;
+  }
+  .act-item-top { display: flex; justify-content: space-between; color: var(--muted); margin-bottom: 4px; font-family: var(--mono); font-size: 10px; }
+  .act-item-detalle { color: var(--text); margin-bottom: 3px; }
+  .act-item-result { color: var(--accent4); }
+
+  /* ── SECCIÓN PENDIENTES ──────────────── */
+  .pending-section { margin-bottom: 20px; }
+  .pending-title { font-size: 11px; font-weight: 700; color: var(--accent3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 10px; }
+  .pending-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .pending-card.vencida { border-left-color: var(--accent3); }
+  .pending-card.hoy     { border-left-color: var(--accent4); }
+  .pending-date { font-family: var(--mono); font-size: 11px; color: var(--muted); min-width: 80px; }
+  .pending-info { flex: 1; }
+  .pending-empresa { font-weight: 700; font-size: 12px; }
+  .pending-accion  { font-size: 11px; color: var(--muted); }
+
+  /* ── LOADING ─────────────────────────── */
+  .loading {
+    text-align: center;
+    padding: 60px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .loading::before { content: '⟳ '; animation: spin 1s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty { text-align: center; padding: 40px; color: var(--muted); font-family: var(--mono); font-size: 12px; }
+
+  .count-badge {
+    background: var(--surface2);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="header-logo">CRM OOH</div>
+    <div class="header-sub">GESTIÓN COMERCIAL · SALTA</div>
+  </div>
+  <div class="header-spacer"></div>
+  <button class="btn btn-primary" onclick="abrirModalEmpresa()">+ Empresa</button>
+  <button class="btn btn-ghost" style="margin-left:6px" onclick="abrirModalActividad()">+ Actividad</button>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('pipeline', this)">Pipeline <span class="count-badge" id="cnt-pipeline">—</span></button>
+  <button class="tab" onclick="switchTab('pendientes', this)">Pendientes <span class="count-badge" id="cnt-pendientes">—</span></button>
+  <button class="tab" onclick="switchTab('actividades', this)">Actividades <span class="count-badge" id="cnt-actividades">—</span></button>
+</div>
+
+<!-- ═══ VIEW: PIPELINE ═══ -->
+<div id="view-pipeline" class="view active">
+
+  <div class="stats" id="stats-pipeline"></div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <span class="filter-label">Rubro</span>
+      <select id="fil-rubro" onchange="filtrarPipeline()">
+        <option value="">Todos los rubros</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Etapa</span>
+      <select id="fil-etapa" onchange="filtrarPipeline()">
+        <option value="">Todas las etapas</option>
+        <option>Prospecto</option>
+        <option>Contactado</option>
+        <option>Propuesta Enviada</option>
+        <option>Negociación</option>
+        <option>Cerrado</option>
+        <option>Descartado</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Segmento</span>
+      <select id="fil-segmento" onchange="filtrarPipeline()">
+        <option value="">Todos</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Buscar</span>
+      <input type="text" id="fil-buscar" placeholder="Empresa / contacto…" oninput="filtrarPipeline()" style="width:180px">
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="limpiarFiltros()">✕ Limpiar</button>
+  </div>
+
+  <div class="table-wrap" id="tabla-pipeline">
+    <div class="loading">Cargando pipeline…</div>
+  </div>
+</div>
+
+<!-- ═══ VIEW: PENDIENTES ═══ -->
+<div id="view-pendientes" class="view">
+  <div id="contenido-pendientes">
+    <div class="loading">Cargando pendientes…</div>
+  </div>
+</div>
+
+<!-- ═══ VIEW: ACTIVIDADES ═══ -->
+<div id="view-actividades" class="view">
+  <div class="filters">
+    <div class="filter-group">
+      <span class="filter-label">Canal</span>
+      <select id="fil-canal" onchange="filtrarActividades()">
+        <option value="">Todos</option>
+        <option>LinkedIn</option>
+        <option>Mail</option>
+        <option>WhatsApp</option>
+        <option>Llamada</option>
+        <option>Página Web</option>
+        <option>Presencial</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Responsable</span>
+      <select id="fil-responsable" onchange="filtrarActividades()">
+        <option value="">Todos</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Buscar empresa</span>
+      <input type="text" id="fil-act-empresa" placeholder="Empresa…" oninput="filtrarActividades()" style="width:160px">
+    </div>
+  </div>
+
+  <div class="table-wrap" id="tabla-actividades">
+    <div class="loading">Cargando actividades…</div>
+  </div>
+</div>
+
+<!-- ═══ PANEL DETALLE ═══ -->
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div>
+      <div class="detail-id" id="dp-id"></div>
+      <div class="detail-empresa" id="dp-empresa"></div>
+    </div>
+    <button class="detail-close" onclick="cerrarDetalle()">×</button>
+  </div>
+  <div id="dp-badge"></div>
+  <hr class="detail-divider">
+  <div id="dp-info"></div>
+  <hr class="detail-divider">
+  <div class="detail-activities-title">Historial de actividades</div>
+  <div id="dp-actividades"></div>
+  <div style="margin-top:14px">
+    <button class="btn btn-primary btn-sm" onclick="abrirActividadDesdeDetalle()">+ Registrar actividad</button>
+  </div>
+</div>
+
+<!-- ═══ MODAL: NUEVA EMPRESA ═══ -->
+<div class="modal-overlay" id="modal-empresa">
+  <div class="modal">
+    <div class="modal-title">➕ Agregar empresa al pipeline</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <span class="form-label">Empresa *</span>
+        <input type="text" id="ne-empresa" placeholder="Nombre de la empresa">
+      </div>
+      <div class="form-group">
+        <span class="form-label">Segmento</span>
+        <select id="ne-segmento">
+          <option value="">— Seleccionar —</option>
+          <option>Agencia Nacional</option>
+          <option>Agencia Creativa</option>
+          <option>Agencia Trade</option>
+          <option>Anunciante Local</option>
+          <option>Broker OOH</option>
+          <option>Broker</option>
+          <option>Retail</option>
+          <option>Salud</option>
+          <option>Institucional</option>
+          <option>Inmobiliario</option>
+          <option>Minería</option>
+          <option>Editorial</option>
+          <option>Construcción</option>
+          <option>Entretenimiento</option>
+          <option>Consultor</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <span class="form-label">Rubro específico</span>
+        <input type="text" id="ne-rubro" placeholder="Ej: Alimentos, Automotor…">
+      </div>
+      <div class="form-group">
+        <span class="form-label">Contacto principal</span>
+        <input type="text" id="ne-contacto" placeholder="Nombre y apellido">
+      </div>
+      <div class="form-group">
+        <span class="form-label">Cargo</span>
+        <input type="text" id="ne-cargo" placeholder="Ej: Marketing, Planner…">
+      </div>
+      <div class="form-group">
+        <span class="form-label">Mail</span>
+        <input type="text" id="ne-mail" placeholder="correo@empresa.com">
+      </div>
+      <div class="form-group">
+        <span class="form-label">Teléfono</span>
+        <input type="text" id="ne-tel" placeholder="+54 9 387…">
+      </div>
+      <div class="form-group">
+        <span class="form-label">CEO / Referente</span>
+        <input type="text" id="ne-ceo" placeholder="Opcional">
+      </div>
+      <div class="form-group">
+        <span class="form-label">Etapa inicial</span>
+        <select id="ne-etapa">
+          <option>Prospecto</option>
+          <option>Contactado</option>
+          <option>Propuesta Enviada</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <span class="form-label">Próxima acción</span>
+        <input type="text" id="ne-proxAccion" placeholder="Ej: Primer contacto">
+      </div>
+      <div class="form-group">
+        <span class="form-label">Fecha próxima acción</span>
+        <input type="date" id="ne-fechaProx">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="cerrarModal('modal-empresa')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEmpresa()">Guardar empresa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: NUEVA ACTIVIDAD ═══ -->
+<div class="modal-overlay" id="modal-actividad">
+  <div class="modal">
+    <div class="modal-title">📝 Registrar actividad</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <span class="form-label">Empresa *</span>
+        <select id="na-empresa">
+          <option value="">— Seleccionar empresa —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <span class="form-label">Fecha *</span>
+        <input type="date" id="na-fecha">
+      </div>
+      <div class="form-group">
+        <span class="form-label">Canal *</span>
+        <select id="na-canal">
+          <option value="">— Seleccionar —</option>
+          <option>LinkedIn</option>
+          <option>Mail</option>
+          <option>WhatsApp</option>
+          <option>Llamada</option>
+          <option>Página Web</option>
+          <option>Presencial</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <span class="form-label">Responsable *</span>
+        <input type="text" id="na-responsable" placeholder="Nombre">
+      </div>
+      <div class="form-group full">
+        <span class="form-label">Detalle de la actividad *</span>
+        <textarea id="na-detalle" placeholder="Describí brevemente la acción realizada…"></textarea>
+      </div>
+      <div class="form-group">
+        <span class="form-label">Resultado</span>
+        <select id="na-resultado">
+          <option>Sin respuesta</option>
+          <option>Respondió - positivo</option>
+          <option>Respondió - negativo</option>
+          <option>Reunión pactada</option>
+          <option>Mail rebotado</option>
+          <option>No contesta</option>
+          <option>En evaluación</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <span class="form-label">Próximo paso</span>
+        <input type="text" id="na-proxPaso" placeholder="Ej: Follow up, Esperar respuesta…">
+      </div>
+      <div class="form-group">
+        <span class="form-label">Fecha próxima acción</span>
+        <input type="date" id="na-fechaProx">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="cerrarModal('modal-actividad')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarActividad()">Guardar actividad</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  background:var(--accent); color:#0d0f14; padding:10px 22px;
+  border-radius:24px; font-weight:700; font-size:12px;
+  display:none; z-index:999; letter-spacing:.3px;
+"></div>
+
+<script>
+// ── ESTADO GLOBAL ────────────────────────────────────────────
+let pipeline    = [];
+let actividades = [];
+let pipelineFiltrado = [];
+let actividadesFiltradas = [];
+let detalleEmpresaId = null;
+
+// ── INIT ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  cargarTodo();
+  document.getElementById('na-fecha').valueAsDate = new Date();
+});
+
+function cargarTodo() {
+  Promise.all([
+    new Promise(r => google.script.run.withSuccessHandler(r).getPipeline()),
+    new Promise(r => google.script.run.withSuccessHandler(r).getActividades())
+  ]).then(([p, a]) => {
+    pipeline    = p || [];
+    actividades = a || [];
+    renderAll();
+  });
+}
+
+function renderAll() {
+  poblarFiltros();
+  filtrarPipeline();
+  renderPendientes();
+  filtrarActividades();
+  renderStats();
+  poblarSelectEmpresas();
+}
+
+// ── TABS ─────────────────────────────────────────────────────
+function switchTab(tab, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + tab).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── FILTROS PIPELINE ─────────────────────────────────────────
+function poblarFiltros() {
+  const rubros    = [...new Set(pipeline.map(e => e.rubro).filter(Boolean))].sort();
+  const segmentos = [...new Set(pipeline.map(e => e.segmento).filter(Boolean))].sort();
+  const resps     = [...new Set(actividades.map(a => a.responsable).filter(Boolean))].sort();
+
+  poblarSelect('fil-rubro',       rubros,    'Todos los rubros');
+  poblarSelect('fil-segmento',    segmentos, 'Todos los segmentos');
+  poblarSelect('fil-responsable', resps,     'Todos');
+}
+
+function poblarSelect(id, items, emptyLabel) {
+  const sel = document.getElementById(id);
+  const val = sel.value;
+  sel.innerHTML = `<option value="">${emptyLabel}</option>`;
+  items.forEach(i => {
+    const o = document.createElement('option');
+    o.value = o.textContent = i;
+    if (i === val) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+function poblarSelectEmpresas() {
+  const sel = document.getElementById('na-empresa');
+  const sorted = [...pipeline].sort((a,b) => a.empresa.localeCompare(b.empresa));
+  sel.innerHTML = '<option value="">— Seleccionar empresa —</option>';
+  sorted.forEach(e => {
+    const o = document.createElement('option');
+    o.value = e.id;
+    o.textContent = `${e.empresa} (${e.id})`;
+    o.dataset.empresa = e.empresa;
+    sel.appendChild(o);
+  });
+}
+
+function filtrarPipeline() {
+  const rubro    = document.getElementById('fil-rubro').value.toLowerCase();
+  const etapa    = document.getElementById('fil-etapa').value.toLowerCase();
+  const segmento = document.getElementById('fil-segmento').value.toLowerCase();
+  const buscar   = document.getElementById('fil-buscar').value.toLowerCase();
+
+  pipelineFiltrado = pipeline.filter(e => {
+    if (rubro    && !e.rubro.toLowerCase().includes(rubro))       return false;
+    if (etapa    && e.etapa.toLowerCase() !== etapa)              return false;
+    if (segmento && e.segmento.toLowerCase() !== segmento)        return false;
+    if (buscar   && !(
+      e.empresa.toLowerCase().includes(buscar) ||
+      e.contacto.toLowerCase().includes(buscar) ||
+      e.mail.toLowerCase().includes(buscar)
+    )) return false;
+    return true;
+  });
+
+  renderTablaPipeline();
+  renderStats();
+  document.getElementById('cnt-pipeline').textContent = pipelineFiltrado.length;
+}
+
+function limpiarFiltros() {
+  ['fil-rubro','fil-etapa','fil-segmento'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fil-buscar').value = '';
+  filtrarPipeline();
+}
+
+// ── RENDER TABLA PIPELINE ─────────────────────────────────────
+function renderTablaPipeline() {
+  const wrap = document.getElementById('tabla-pipeline');
+  if (!pipelineFiltrado.length) {
+    wrap.innerHTML = '<div class="empty">No hay empresas con esos filtros.</div>';
+    return;
+  }
+
+  const rows = pipelineFiltrado.map(e => `
+    <tr onclick="abrirDetalle('${e.id}')">
+      <td style="font-family:var(--mono);font-size:10px;color:var(--muted)">${e.id}</td>
+      <td><strong>${e.empresa}</strong></td>
+      <td style="color:var(--muted)">${e.rubro}</td>
+      <td>${e.contacto}</td>
+      <td>${badgeEtapa(e.etapa)}</td>
+      <td style="color:var(--muted)">${e.proxAccion}</td>
+      <td style="font-family:var(--mono);font-size:11px">${fechaDisplay(e.fechaProx)}</td>
+    </tr>
+  `).join('');
+
+  wrap.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Empresa</th><th>Rubro</th><th>Contacto</th>
+          <th>Etapa</th><th>Próx. Acción</th><th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+// ── STATS PIPELINE ────────────────────────────────────────────
+function renderStats() {
+  const data = pipelineFiltrado;
+  const byEtapa = {};
+  data.forEach(e => { byEtapa[e.etapa] = (byEtapa[e.etapa] || 0) + 1; });
+
+  const cards = [
+    { num: data.length,                         label: 'Total' },
+    { num: byEtapa['Prospecto']       || 0,     label: 'Prospectos' },
+    { num: byEtapa['Contactado']      || 0,     label: 'Contactados' },
+    { num: byEtapa['Propuesta Enviada']|| 0,    label: 'Propuestas' },
+    { num: byEtapa['Negociación']     || 0,     label: 'Negociando' },
+    { num: byEtapa['Cerrado']         || 0,     label: 'Cerrados' },
+  ];
+
+  document.getElementById('stats-pipeline').innerHTML = cards.map(c => `
+    <div class="stat-card">
+      <div class="stat-num">${c.num}</div>
+      <div class="stat-label">${c.label}</div>
+    </div>
+  `).join('');
+}
+
+// ── PENDIENTES ────────────────────────────────────────────────
+function renderPendientes() {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+
+  const pendientes = pipeline
+    .filter(e => e.fechaProx)
+    .map(e => ({...e, _fecha: new Date(e.fechaProx)}))
+    .sort((a,b) => a._fecha - b._fecha);
+
+  const vencidas  = pendientes.filter(e => e._fecha < hoy);
+  const deHoy     = pendientes.filter(e => e._fecha.getTime() === hoy.getTime());
+  const proximas  = pendientes.filter(e => e._fecha > hoy);
+
+  document.getElementById('cnt-pendientes').textContent = pendientes.length;
+
+  let html = '';
+
+  if (vencidas.length) {
+    html += `<div class="pending-section">
+      <div class="pending-title">🔴 Vencidas (${vencidas.length})</div>
+      ${vencidas.map(e => cardPendiente(e, 'vencida')).join('')}
+    </div>`;
+  }
+  if (deHoy.length) {
+    html += `<div class="pending-section">
+      <div class="pending-title" style="color:var(--accent4)">🟢 Hoy (${deHoy.length})</div>
+      ${deHoy.map(e => cardPendiente(e, 'hoy')).join('')}
+    </div>`;
+  }
+  if (proximas.length) {
+    html += `<div class="pending-section">
+      <div class="pending-title" style="color:var(--accent2)">🔵 Próximas (${proximas.length})</div>
+      ${proximas.map(e => cardPendiente(e, '')).join('')}
+    </div>`;
+  }
+
+  if (!html) html = '<div class="empty">No hay acciones con fecha asignada.</div>';
+  document.getElementById('contenido-pendientes').innerHTML = html;
+}
+
+function cardPendiente(e, cls) {
+  return `
+    <div class="pending-card ${cls}" onclick="abrirDetalle('${e.id}')">
+      <div class="pending-date">${e.fechaProx}</div>
+      <div class="pending-info">
+        <div class="pending-empresa">${e.empresa}</div>
+        <div class="pending-accion">${e.proxAccion}</div>
+      </div>
+      ${badgeEtapa(e.etapa)}
+    </div>
+  `;
+}
+
+// ── ACTIVIDADES ───────────────────────────────────────────────
+function filtrarActividades() {
+  const canal    = document.getElementById('fil-canal').value;
+  const resp     = document.getElementById('fil-responsable').value;
+  const empresa  = document.getElementById('fil-act-empresa').value.toLowerCase();
+
+  actividadesFiltradas = actividades.filter(a => {
+    if (canal   && a.canal !== canal)                              return false;
+    if (resp    && a.responsable !== resp)                         return false;
+    if (empresa && !a.empresa.toLowerCase().includes(empresa))     return false;
+    return true;
+  });
+
+  renderTablaActividades();
+  document.getElementById('cnt-actividades').textContent = actividadesFiltradas.length;
+}
+
+function renderTablaActividades() {
+  const wrap = document.getElementById('tabla-actividades');
+  if (!actividadesFiltradas.length) {
+    wrap.innerHTML = '<div class="empty">No hay actividades con esos filtros.</div>';
+    return;
+  }
+
+  // Más recientes primero
+  const sorted = [...actividadesFiltradas].sort((a,b) => b.fecha.localeCompare(a.fecha));
+
+  const rows = sorted.map(a => `
+    <tr>
+      <td style="font-family:var(--mono);font-size:11px">${a.fecha}</td>
+      <td style="font-family:var(--mono);font-size:10px;color:var(--muted)">${a.idCliente}</td>
+      <td><strong>${a.empresa}</strong></td>
+      <td>${badgeCanal(a.canal)}</td>
+      <td style="color:var(--muted)">${a.responsable}</td>
+      <td title="${a.detalle}" style="max-width:220px">${a.detalle}</td>
+      <td>${badgeResultado(a.resultado)}</td>
+      <td style="color:var(--muted)">${a.proxPaso}</td>
+      <td style="font-family:var(--mono);font-size:11px">${a.fechaProx || ''}</td>
+    </tr>
+  `).join('');
+
+  wrap.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th><th>ID</th><th>Empresa</th><th>Canal</th>
+          <th>Responsable</th><th>Detalle</th><th>Resultado</th>
+          <th>Próx. Paso</th><th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+// ── PANEL DETALLE ─────────────────────────────────────────────
+function abrirDetalle(id) {
+  const e = pipeline.find(x => x.id === id);
+  if (!e) return;
+  detalleEmpresaId = id;
+
+  document.getElementById('dp-id').textContent      = e.id;
+  document.getElementById('dp-empresa').textContent  = e.empresa;
+  document.getElementById('dp-badge').innerHTML      = badgeEtapa(e.etapa);
+
+  const info = [
+    ['Segmento',    e.segmento],
+    ['Rubro',       e.rubro],
+    ['Contacto',    e.contacto],
+    ['Cargo',       e.cargo],
+    ['Mail',        e.mail],
+    ['Teléfono',    e.tel],
+    ['CEO / Ref.',  e.ceo],
+    ['Próx. Acción',e.proxAccion],
+    ['Fecha',       e.fechaProx],
+  ].filter(([,v]) => v).map(([k,v]) => `
+    <div class="detail-row">
+      <div class="detail-key">${k}</div>
+      <div class="detail-val">${v}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('dp-info').innerHTML = info;
+
+  const acts = actividades
+    .filter(a => a.idCliente === id)
+    .sort((a,b) => b.fecha.localeCompare(a.fecha));
+
+  document.getElementById('dp-actividades').innerHTML = acts.length
+    ? acts.map(a => `
+        <div class="act-item">
+          <div class="act-item-top">
+            <span>${a.fecha}</span>
+            <span>${a.canal} · ${a.responsable}</span>
+          </div>
+          <div class="act-item-detalle">${a.detalle}</div>
+          ${a.resultado ? `<div class="act-item-result">→ ${a.resultado}</div>` : ''}
+          ${a.proxPaso  ? `<div style="color:var(--muted);font-size:10px;margin-top:2px">Próx: ${a.proxPaso}${a.fechaProx ? ' · ' + a.fechaProx : ''}</div>` : ''}
+        </div>
+      `).join('')
+    : '<div style="color:var(--muted);font-size:11px">Sin actividades registradas.</div>';
+
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function cerrarDetalle() {
+  document.getElementById('detail-panel').classList.remove('open');
+  detalleEmpresaId = null;
+}
+
+function abrirActividadDesdeDetalle() {
+  cerrarDetalle();
+  const e = pipeline.find(x => x.id === detalleEmpresaId || x.id === document.getElementById('dp-id').textContent);
+  abrirModalActividad(detalleEmpresaId || (e && e.id));
+}
+
+// ── MODALES ───────────────────────────────────────────────────
+function abrirModalEmpresa() {
+  document.getElementById('modal-empresa').classList.add('open');
+}
+
+function abrirModalActividad(preselId) {
+  document.getElementById('modal-actividad').classList.add('open');
+  document.getElementById('na-fecha').valueAsDate = new Date();
+  if (preselId) {
+    const sel = document.getElementById('na-empresa');
+    for (const o of sel.options) { if (o.value === preselId) { o.selected = true; break; } }
+  }
+}
+
+function cerrarModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Cerrar modal al click fuera
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ── GUARDAR EMPRESA ───────────────────────────────────────────
+function guardarEmpresa() {
+  const datos = {
+    empresa:    v('ne-empresa'),
+    segmento:   v('ne-segmento'),
+    rubro:      v('ne-rubro'),
+    contacto:   v('ne-contacto'),
+    cargo:      v('ne-cargo'),
+    mail:       v('ne-mail'),
+    tel:        v('ne-tel'),
+    ceo:        v('ne-ceo'),
+    etapa:      v('ne-etapa'),
+    proxAccion: v('ne-proxAccion'),
+    fechaProx:  v('ne-fechaProx'),
+  };
+  if (!datos.empresa) { toast('Ingresá el nombre de la empresa', true); return; }
+
+  google.script.run
+    .withSuccessHandler(res => {
+      cerrarModal('modal-empresa');
+      toast(`✓ Empresa ${res.id} agregada al pipeline`);
+      cargarTodo();
+      resetForm('modal-empresa');
+    })
+    .withFailureHandler(err => toast('Error: ' + err.message, true))
+    .agregarEmpresa(datos);
+}
+
+// ── GUARDAR ACTIVIDAD ─────────────────────────────────────────
+function guardarActividad() {
+  const sel = document.getElementById('na-empresa');
+  const idCliente = sel.value;
+  const empresaNombre = sel.options[sel.selectedIndex]?.dataset?.empresa || '';
+
+  if (!idCliente) { toast('Seleccioná una empresa', true); return; }
+  if (!v('na-canal'))   { toast('Seleccioná un canal', true); return; }
+  if (!v('na-detalle')) { toast('Completá el detalle', true); return; }
+
+  const datos = {
+    idCliente,
+    empresa:     empresaNombre,
+    fecha:       v('na-fecha'),
+    canal:       v('na-canal'),
+    responsable: v('na-responsable'),
+    detalle:     v('na-detalle'),
+    resultado:   v('na-resultado'),
+    proxPaso:    v('na-proxPaso'),
+    fechaProx:   v('na-fechaProx'),
+  };
+
+  google.script.run
+    .withSuccessHandler(() => {
+      cerrarModal('modal-actividad');
+      toast('✓ Actividad registrada');
+      cargarTodo();
+      resetForm('modal-actividad');
+    })
+    .withFailureHandler(err => toast('Error: ' + err.message, true))
+    .agregarActividad(datos);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function v(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+function resetForm(modalId) {
+  document.getElementById(modalId).querySelectorAll('input, textarea, select').forEach(el => {
+    if (el.tagName === 'SELECT') el.selectedIndex = 0;
+    else el.value = '';
+  });
+}
+
+function badgeEtapa(etapa) {
+  const map = {
+    'Prospecto':        'prospecto',
+    'Contactado':       'contactado',
+    'Propuesta Enviada':'propuesta',
+    'Negociación':      'negociacion',
+    'Cerrado':          'cerrado',
+    'Descartado':       'descartado',
+  };
+  const cls = map[etapa] || 'prospecto';
+  return `<span class="badge badge-${cls}">${etapa || '—'}</span>`;
+}
+
+function badgeCanal(canal) {
+  const icons = { LinkedIn:'🔗', Mail:'📧', WhatsApp:'💬', Llamada:'📞', 'Página Web':'🌐', Presencial:'🤝', Otro:'📌' };
+  return `<span style="font-size:11px">${icons[canal]||'📌'} ${canal}</span>`;
+}
+
+function badgeResultado(res) {
+  let color = 'var(--muted)';
+  if (res?.includes('positivo') || res?.includes('pactada')) color = 'var(--accent4)';
+  else if (res?.includes('negativo') || res?.includes('rebotado')) color = 'var(--accent3)';
+  else if (res?.includes('evaluación')) color = 'var(--accent2)';
+  return `<span style="font-size:11px;color:${color}">${res||'—'}</span>`;
+}
+
+function fechaDisplay(f) {
+  if (!f) return '—';
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const d = new Date(f);
+  const diff = Math.round((d - hoy) / 86400000);
+  if (diff < 0)  return `<span style="color:var(--accent3)">${f}</span>`;
+  if (diff === 0)return `<span style="color:var(--accent4)">HOY</span>`;
+  if (diff <= 3) return `<span style="color:var(--accent)">${f}</span>`;
+  return f;
+}
+
+function toast(msg, error=false) {
+  const t = document.getElementById('toast');
+  t.textContent  = msg;
+  t.style.background = error ? 'var(--accent3)' : 'var(--accent)';
+  t.style.color      = error ? '#fff' : '#0d0f14';
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+</script>
+</body>
+</html>
